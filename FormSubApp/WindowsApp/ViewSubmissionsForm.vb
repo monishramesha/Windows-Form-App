@@ -3,10 +3,13 @@ Imports System.Net.Http
 Imports NewtonSoft.Json
 Public Class ViewSubmissionsForm
     Inherits System.Windows.Forms.Form
+
     Private submissions As List(Of Submission)
     Private currentIndex As Integer = 0
+
     Private WithEvents btnPrevious As System.Windows.Forms.Button
     Private WithEvents btnNext As System.Windows.Forms.Button
+    Private lblSubmissionDetails As System.Windows.Forms.Label
 
     Private Sub ViewSubmissionsForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.KeyPreview = True
@@ -37,7 +40,6 @@ Public Class ViewSubmissionsForm
     End Sub
 
     Private Async Sub LoadSubmissions()
-        'Replace with actual API call logic
         Try
             Dim client As New HttpClient()
             Dim response As HttpResponseMessage = client.GetAsync("http://localhost:3000/read?index=0").Result
@@ -46,6 +48,11 @@ Public Class ViewSubmissionsForm
             Dim json As String = Await response.Content.ReadAsStringAsync()
             submissions = JsonConvert.DeserializeObject(Of List(Of Submission))(json)
 
+            If submissions Is Nothing Then
+                submissions = New List(Of Submission)()
+            End If
+
+            DisplayCurrentSubmission()
         Catch ex As Exception
             MessageBox.Show("Error loading submissions: " & ex.Message)
             submissions = New List(Of Submission)()
@@ -56,8 +63,57 @@ Public Class ViewSubmissionsForm
         If submissions.Count > 0 AndAlso currentIndex >= 0 AndAlso currentIndex < submissions.Count Then
             Dim submission = submissions(currentIndex)
             ' Display submission details
-            MessageBox.Show($"Name: {submission.Name}, Email: {submission.Email}, Phone: {submission.Phone}, GitHub: {submission.GitHubLink}, Time: {submission.StopwatchTime}")
+            lblSubmissionDetails.Text = $"Name: {submission.Name}{Environment.NewLine}" &
+                                        $"Email: {submission.Email}{Environment.NewLine}" &
+                                        $"Phone: {submission.Phone}{Environment.NewLine}" &
+                                        $"GitHub: {submission.GitHubLink}{Environment.NewLine}" &
+                                        $"Time: {submission.StopwatchTime}"
+            'MessageBox.Show($"Name: {submission.Name}, Email: {submission.Email}, Phone: {submission.Phone}, GitHub: {submission.GitHubLink}, Time: {submission.StopwatchTime}")
+        Else
+            lblSubmissionDetails.Text = "No submissions available."
         End If
+    End Sub
+    Private Sub InitializeComponent()
+        Me.btnPrevious = New System.Windows.Forms.Button()
+        Me.btnNext = New System.Windows.Forms.Button()
+        Me.lblSubmissionDetails = New System.Windows.Forms.Label()
+
+        ' 
+        ' btnPrevious
+        ' 
+        Me.btnPrevious.Location = New System.Drawing.Point(50, 250)
+        Me.btnPrevious.Name = "btnPrevious"
+        Me.btnPrevious.Size = New System.Drawing.Size(100, 30)
+        Me.btnPrevious.Text = "Previous"
+        Me.btnPrevious.UseVisualStyleBackColor = True
+
+        ' 
+        ' btnNext
+        ' 
+        Me.btnNext.Location = New System.Drawing.Point(200, 250)
+        Me.btnNext.Name = "btnNext"
+        Me.btnNext.Size = New System.Drawing.Size(100, 30)
+        Me.btnNext.Text = "Next"
+        Me.btnNext.UseVisualStyleBackColor = True
+
+        ' 
+        ' lblSubmissionDetails
+        ' 
+        Me.lblSubmissionDetails.Location = New System.Drawing.Point(50, 50)
+        Me.lblSubmissionDetails.Name = "lblSubmissionDetails"
+        Me.lblSubmissionDetails.Size = New System.Drawing.Size(400, 150)
+        Me.lblSubmissionDetails.Text = "Loading submissions..."
+        Me.lblSubmissionDetails.AutoSize = True
+
+        ' 
+        ' ViewSubmissionsForm
+        ' 
+        Me.ClientSize = New System.Drawing.Size(600, 400)
+        Me.Controls.Add(Me.btnPrevious)
+        Me.Controls.Add(Me.btnNext)
+        Me.Controls.Add(Me.lblSubmissionDetails)
+        Me.Name = "ViewSubmissionsForm"
+        Me.Text = "View Submissions"
     End Sub
 End Class
 
