@@ -1,4 +1,5 @@
-﻿Imports System.Net.Http
+﻿Imports System.Drawing
+Imports System.Windows.Forms
 Imports Newtonsoft.Json
 
 Public Class ViewSubmissionsForm
@@ -45,7 +46,6 @@ Public Class ViewSubmissionsForm
     Private Sub LoadSubmissions()
         Try
             Dim jsonData As String = System.IO.File.ReadAllText("C:\Users\monis\source\repos\FormSubApp\FormSubApp\Backend\src\db.json")
-            MessageBox.Show("JSON Data: " & jsonData)
             Dim workflowContainer As WorkflowContainer = JsonConvert.DeserializeObject(Of WorkflowContainer)(jsonData)
             submissions = workflowContainer.Workflows
 
@@ -62,7 +62,6 @@ Public Class ViewSubmissionsForm
             lblSubmissionDetails.Text = "Error loading submissions."
         End Try
     End Sub
-
 
     Private Sub DisplayCurrentSubmission()
         If submissions.Count > 0 AndAlso currentIndex >= 0 AndAlso currentIndex < submissions.Count Then
@@ -83,40 +82,43 @@ Public Class ViewSubmissionsForm
         Me.lblSubmissionDetails = New System.Windows.Forms.Label()
         Me.SuspendLayout()
 
-        ' 
-        ' btnPrevious
-        ' 
-        Me.btnPrevious.Location = New System.Drawing.Point(50, 250)
-        Me.btnPrevious.Name = "btnPrevious"
-        Me.btnPrevious.Size = New System.Drawing.Size(100, 30)
-        Me.btnPrevious.Text = "Previous"
-        Me.btnPrevious.UseVisualStyleBackColor = True
+        ' Footer Label
+        Dim lblFooter As New Label With {
+            .Text = "Monish R, Slidely Task 2 - View Submissions",
+            .Dock = DockStyle.Bottom,
+            .AutoSize = False,
+            .TextAlign = ContentAlignment.MiddleCenter,
+            .BackColor = Color.LightGray,
+            .ForeColor = Color.Black,
+            .Font = New Font("Segoe UI", 9, FontStyle.Bold)
+        }
+        Me.Controls.Add(lblFooter)
 
-        ' 
-        ' btnNext
-        ' 
-        Me.btnNext.Location = New System.Drawing.Point(200, 250)
-        Me.btnNext.Name = "btnNext"
-        Me.btnNext.Size = New System.Drawing.Size(100, 30)
-        Me.btnNext.Text = "Next"
-        Me.btnNext.UseVisualStyleBackColor = True
+        ' Previous Button
+        Me.btnPrevious.Location = New Point(Me.ClientSize.Width \ 2 + 20, Me.ClientSize.Height)
+        Me.btnPrevious.Size = New Size(150, 30)
+        Me.btnPrevious.Text = "Previous (Ctrl + P)"
+        Me.Controls.Add(btnPrevious)
 
-        ' 
-        ' lblSubmissionDetails
-        ' 
-        Me.lblSubmissionDetails.Location = New System.Drawing.Point(50, 50)
-        Me.lblSubmissionDetails.Name = "lblSubmissionDetails"
-        Me.lblSubmissionDetails.Size = New System.Drawing.Size(400, 150)
+        ' Next Button
+        Me.btnNext.Location = New Point(Me.ClientSize.Width \ 2 + 200, Me.ClientSize.Height)
+        Me.btnNext.Size = New Size(150, 30)
+        Me.btnNext.Text = "Next (Ctrl + N)"
+        Me.Controls.Add(btnNext)
+
+        ' Submission Details Label
+        Me.lblSubmissionDetails.Location = New Point(Me.ClientSize.Width, Me.ClientSize.Height - 150)
+        Me.lblSubmissionDetails.Size = New Size(300, 150)
         Me.lblSubmissionDetails.Text = "Loading submissions..."
+        Me.lblSubmissionDetails.Font = New Font("Segoe UI", 12, FontStyle.Regular)
         Me.lblSubmissionDetails.AutoSize = True
+        Me.Controls.Add(lblSubmissionDetails)
 
-        ' 
         ' ViewSubmissionsForm
-        ' 
-        Me.ClientSize = New System.Drawing.Size(600, 400)
-        Me.Controls.Add(Me.btnPrevious)
-        Me.Controls.Add(Me.btnNext)
+        Me.ClientSize = New Size(800, 500)
         Me.Controls.Add(Me.lblSubmissionDetails)
+        Me.Controls.Add(Me.btnNext)
+        Me.Controls.Add(Me.btnPrevious)
         Me.Name = "ViewSubmissionsForm"
         Me.Text = "View Submissions"
         Me.ResumeLayout(False)
