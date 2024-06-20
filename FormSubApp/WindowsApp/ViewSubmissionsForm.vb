@@ -1,5 +1,10 @@
 ﻿Imports System.Net.Http
 Imports Newtonsoft.Json
+Imports System.ComponentModel
+Imports System.Runtime.InteropServices
+Imports Microsoft.VisualBasic.FileIO
+Imports System.Windows.Forms.Design
+Imports System.Text
 
 Public Class ViewSubmissionsForm
     Inherits System.Windows.Forms.Form
@@ -9,6 +14,8 @@ Public Class ViewSubmissionsForm
 
     Private WithEvents btnPrevious As System.Windows.Forms.Button
     Private WithEvents btnNext As System.Windows.Forms.Button
+    Private WithEvents btnDelete As System.Windows.Forms.Button
+    Private WithEvents btnEdit As System.Windows.Forms.Button
     Private lblSubmissionDetails As System.Windows.Forms.Label
 
     Public Sub New()
@@ -42,7 +49,52 @@ Public Class ViewSubmissionsForm
         End If
     End Sub
 
-    Private Sub LoadSubmissions()
+    Private Async Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
+        If submissions.Count > 0 AndAlso currentIndex >= 0 AndAlso currentIndex < submissions.Count Then
+            Dim submissionToDelete = submissions(currentIndex)
+            Dim client As New HttpClient()
+            Dim response = Await client.DeleteAsync($"http://localhost:3000/delete?email={submissionToDelete.Email}")
+            response.EnsureSuccessStatusCode()
+
+            MessageBox.Show("Submission deleted successfully")
+            LoadSubmissions()
+        Else
+            MessageBox.Show("Not submissions selected to delete")
+        End If
+    End Sub
+
+    Private Async Sub btnEdit_Click(sender As Object, e As EventArgs) Handles btnEdit.Click
+        If submissions IsNot Nothing AndAlso currentIndex >= 0 AndAlso currentIndex < submissions.Count Then
+            Dim submissionId = submissions(currentIndex).Email
+
+
+            Dim updatedSubmission As New WorkflowItem() With {
+            .Name = txtName.Text,
+            .Email = txtEmail.Text,
+            .Phone = txtPhone.Text,
+            .GitHubLink = txtGithubLink.Text,
+            .StopwatchTime = Stopwatch.Elapsed.ToString()
+        }
+
+            Try
+                Dim client As New HttpClient()
+                Dim jsonString As String = JsonConvert.SerializeObject(updatedSubmission)
+                Dim content As New StringContent(jsonString, Encoding.UTF8, "application/json")
+
+                Dim response = Await client.PutAsync($"http://localhost:3000/edit/{submissionId}", content)
+                response.EnsureSuccessStatusCode()
+
+                MessageBox.Show("Submission updated successfully!")
+                LoadSubmissions() ' Refresh submissions after update
+            Catch ex As Exception
+                MessageBox.Show($"Error updating submission: {ex.Message}")
+            End Try
+        Else
+            MessageBox.Show("No submission selected.")
+        End If
+    End Sub
+
+    Private Async Sub LoadSubmissions()
         Try
             Dim jsonData As String = System.IO.File.ReadAllText("C:\Users\monis\source\repos\FormSubApp\FormSubApp\Backend\src\db.json")
             MessageBox.Show("JSON Data: " & jsonData)
@@ -80,7 +132,10 @@ Public Class ViewSubmissionsForm
     Private Sub InitializeComponent()
         Me.btnPrevious = New System.Windows.Forms.Button()
         Me.btnNext = New System.Windows.Forms.Button()
+        Me.btnDelete = New System.Windows.Forms.Button()
+        Me.btnEdit = New System.Windows.Forms.Button()
         Me.lblSubmissionDetails = New System.Windows.Forms.Label()
+        Me.Controls.Add(Me.lblSubmissionDetails)
         Me.SuspendLayout()
 
         ' 
@@ -101,6 +156,24 @@ Public Class ViewSubmissionsForm
         Me.btnNext.Text = "Next"
         Me.btnNext.UseVisualStyleBackColor = True
 
+        '
+        'btnDelete
+        '
+        Me.btnDelete.Location = New System.Drawing.Point(50, 300)
+        Me.btnDelete.Name = "btnDelete"
+        Me.btnDelete.Size = New System.Drawing.Size(100, 30)
+        Me.btnDelete.Text = "Delete"
+        Me.btnDelete.UseVisualStyleBackColor = True
+
+        '
+        ' btnEdit
+        '
+        Me.btnEdit.Location = New System.Drawing.Point(200, 300)
+        Me.btnEdit.Name = "btnEdit"
+        Me.btnEdit.Size = New System.Drawing.Size(100, 30)
+        Me.btnEdit.Text = "Edit"
+        Me.btnEdit.UseVisualStyleBackColor = True
+
         ' 
         ' lblSubmissionDetails
         ' 
@@ -116,6 +189,8 @@ Public Class ViewSubmissionsForm
         Me.ClientSize = New System.Drawing.Size(600, 400)
         Me.Controls.Add(Me.btnPrevious)
         Me.Controls.Add(Me.btnNext)
+        Me.Controls.Add(Me.btnDelete)
+        Me.Controls.Add(Me.btnEdit)
         Me.Controls.Add(Me.lblSubmissionDetails)
         Me.Name = "ViewSubmissionsForm"
         Me.Text = "View Submissions"

@@ -93,6 +93,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="WindowsApp\CreateSubmissionsForm.vb" />
+    <Compile Include="WindowsApp\EditSubmissionForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="WindowsApp\MainForm.vb">
       <SubType>Form</SubType>
     </Compile>

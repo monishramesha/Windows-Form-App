@@ -58,3 +58,74 @@ export const readForm = (req: Request, res: Response) => {
 
     res.json(workflowContainer.Workflows);
 };
+
+export const deleteForm = (req: Request, res: Response) => {
+    const em = req.params.email;
+
+    //read existing data from db.json
+    let workflowContainer: WorkflowContainer = { Workflows: [] };
+    try {
+        if (fs.existsSync(DB_FILE)) {
+            workflowContainer = fs.readJsonSync(DB_FILE);
+        }
+    } catch (error) {
+        console.error('Error reading db.json:', error)
+        res.status(500).json({ error: 'Failed to read workflows' });
+        return;
+    }
+
+    //find index of submission to delete
+    const index = workflowContainer.Workflows.findIndex(item => item.Email === em);
+    if (index === -1) {
+        res.status(404).json({ error: 'Submission not found' });
+        return;
+    }
+
+    workflowContainer.Workflows.splice(index, 1);
+
+    try {
+        fs.writeJsonSync(DB_FILE, workflowContainer, { spaces: 2 });
+        console.log('Workflow deleted successfully');
+        res.status(204).end();
+    } catch (error) {
+        console.error('Error writing to db.json: ', error);
+        res.status(500).json({ error: 'Failed to delete workflow' });
+    }
+};
+
+export const editForm = (req: Request, res: Response) => {
+    const em = req.params.email; // Extract submission ID from request params
+    const updatedSubmission: WorkflowItem = req.body as WorkflowItem; // Updated submission data
+
+    // Read existing data from db.json
+    let workflowContainer: WorkflowContainer = { Workflows: [] };
+    try {
+        if (fs.existsSync(DB_FILE)) {
+            workflowContainer = fs.readJsonSync(DB_FILE);
+        }
+    } catch (error) {
+        console.error('Error reading db.json:', error);
+        res.status(500).json({ error: 'Failed to read workflows' });
+        return;
+    }
+
+    // Find index of the submission to update
+    const index = workflowContainer.Workflows.findIndex(item => item.Email === em);
+    if (index === -1) {
+        res.status(404).json({ error: 'Submission not found' });
+        return;
+    }
+
+    // Update the submission
+    workflowContainer.Workflows[index] = updatedSubmission;
+
+    // Write updated data back to db.json
+    try {
+        fs.writeJsonSync(DB_FILE, workflowContainer, { spaces: 2 });
+        console.log('Workflow updated successfully:', updatedSubmission);
+        res.status(200).json(updatedSubmission); // Respond with updated submission
+    } catch (error) {
+        console.error('Error writing to db.json:', error);
+        res.status(500).json({ error: 'Failed to update workflow' });
+    }
+};
