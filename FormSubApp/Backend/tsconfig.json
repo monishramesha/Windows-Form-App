@@ -10,12 +10,12 @@
     "noImplicitAny": true,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": []
   },
-  "include": [ "src/**/*.ts" ],
-  "exclude": [ "node_modules", "dist" ]
+  "include": [ "./**/*.ts" ],
+  "exclude": [ "node_modules", "**/*.spec.ts" ]
 }

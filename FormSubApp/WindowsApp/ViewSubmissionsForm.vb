@@ -1,20 +1,23 @@
-﻿Imports System.ComponentModel
-Imports System.Net.Http
-Imports NewtonSoft.Json
+﻿Imports System.Net.Http
+Imports Newtonsoft.Json
+
 Public Class ViewSubmissionsForm
     Inherits System.Windows.Forms.Form
 
-    Private submissions As List(Of Submission)
+    Private submissions As List(Of WorkflowItem)
     Private currentIndex As Integer = 0
 
     Private WithEvents btnPrevious As System.Windows.Forms.Button
     Private WithEvents btnNext As System.Windows.Forms.Button
     Private lblSubmissionDetails As System.Windows.Forms.Label
 
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
     Private Sub ViewSubmissionsForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.KeyPreview = True
         LoadSubmissions()
-        DisplayCurrentSubmission()
     End Sub
 
     Private Sub ViewSubmissionsForm_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
@@ -32,51 +35,53 @@ Public Class ViewSubmissionsForm
         End If
     End Sub
 
-    Private Sub btnNnext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
+    Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
         If currentIndex < submissions.Count - 1 Then
             currentIndex += 1
             DisplayCurrentSubmission()
         End If
     End Sub
 
-    Private Async Sub LoadSubmissions()
+    Private Sub LoadSubmissions()
         Try
-            Dim client As New HttpClient()
-            Dim response As HttpResponseMessage = client.GetAsync("http://localhost:3000/read?index=0").Result
-            response.EnsureSuccessStatusCode()
+            Dim jsonData As String = System.IO.File.ReadAllText("C:\Users\monis\source\repos\FormSubApp\FormSubApp\Backend\src\db.json")
+            MessageBox.Show("JSON Data: " & jsonData)
+            Dim workflowContainer As WorkflowContainer = JsonConvert.DeserializeObject(Of WorkflowContainer)(jsonData)
+            submissions = workflowContainer.Workflows
 
-            Dim json As String = Await response.Content.ReadAsStringAsync()
-            submissions = JsonConvert.DeserializeObject(Of List(Of Submission))(json)
-
-            If submissions Is Nothing Then
-                submissions = New List(Of Submission)()
+            If submissions Is Nothing OrElse submissions.Count = 0 Then
+                submissions = New List(Of WorkflowItem)()
+                lblSubmissionDetails.Text = "No submissions available."
+            Else
+                DisplayCurrentSubmission()
             End If
 
-            DisplayCurrentSubmission()
         Catch ex As Exception
             MessageBox.Show("Error loading submissions: " & ex.Message)
-            submissions = New List(Of Submission)()
+            submissions = New List(Of WorkflowItem)()
+            lblSubmissionDetails.Text = "Error loading submissions."
         End Try
     End Sub
+
 
     Private Sub DisplayCurrentSubmission()
         If submissions.Count > 0 AndAlso currentIndex >= 0 AndAlso currentIndex < submissions.Count Then
             Dim submission = submissions(currentIndex)
-            ' Display submission details
             lblSubmissionDetails.Text = $"Name: {submission.Name}{Environment.NewLine}" &
                                         $"Email: {submission.Email}{Environment.NewLine}" &
                                         $"Phone: {submission.Phone}{Environment.NewLine}" &
                                         $"GitHub: {submission.GitHubLink}{Environment.NewLine}" &
                                         $"Time: {submission.StopwatchTime}"
-            'MessageBox.Show($"Name: {submission.Name}, Email: {submission.Email}, Phone: {submission.Phone}, GitHub: {submission.GitHubLink}, Time: {submission.StopwatchTime}")
         Else
             lblSubmissionDetails.Text = "No submissions available."
         End If
     End Sub
+
     Private Sub InitializeComponent()
         Me.btnPrevious = New System.Windows.Forms.Button()
         Me.btnNext = New System.Windows.Forms.Button()
         Me.lblSubmissionDetails = New System.Windows.Forms.Label()
+        Me.SuspendLayout()
 
         ' 
         ' btnPrevious
@@ -114,21 +119,42 @@ Public Class ViewSubmissionsForm
         Me.Controls.Add(Me.lblSubmissionDetails)
         Me.Name = "ViewSubmissionsForm"
         Me.Text = "View Submissions"
+        Me.ResumeLayout(False)
     End Sub
 End Class
 
-Public Class Submission
+Public Class WorkflowItem
     Public Property Name As String
     Public Property Email As String
     Public Property Phone As String
     Public Property GitHubLink As String
     Public Property StopwatchTime As String
 
-    Public Sub New(name As String, email As String, phone As String, gitHubLink As String, stopwatchTime As String)
-        Me.Name = name
-        Me.Email = email
-        Me.Phone = phone
-        Me.GitHubLink = gitHubLink
-        Me.StopwatchTime = stopwatchTime
+    ' Parameterless constructor for serialization
+    Public Sub New()
+    End Sub
+
+    ' Parameterized constructor for creating new instances
+    Public Sub New(Name As String, Email As String, Phone As String, GitHubLink As String, StopwatchTime As String)
+        Me.Name = Name
+        Me.Email = Email
+        Me.Phone = Phone
+        Me.GitHubLink = GitHubLink
+        Me.StopwatchTime = StopwatchTime
+    End Sub
+End Class
+
+' Define WorkflowContainer class to hold list of WorkflowItem
+Public Class WorkflowContainer
+    Public Property Workflows As List(Of WorkflowItem)
+
+    ' Parameterless constructor for serialization
+    Public Sub New()
+        Workflows = New List(Of WorkflowItem)()
+    End Sub
+
+    ' Constructor to initialize the workflows list
+    Public Sub New(workflows As List(Of WorkflowItem))
+        Me.Workflows = workflows
     End Sub
 End Class
