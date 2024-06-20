@@ -2,8 +2,9 @@
 import { Request, Response } from 'express';
 import fs from 'fs-extra';
 import { Submission } from './types'; // Ensure the correct path to types.ts
+import path from 'path';
 
-const DB_FILE = './src/db.json';
+const DB_FILE = path.join(__dirname, 'db.json');
 
 export const submitForm = (req: Request, res: Response) => {
     const submission: Submission = req.body as Submission; // Ensure req.body is correctly typed as Submission
@@ -11,7 +12,11 @@ export const submitForm = (req: Request, res: Response) => {
     // Read existing data from db.json
     let submissions: Submission[] = [];
     try {
-        submissions = fs.readJsonSync(DB_FILE);
+        if (fs.existsSync(DB_FILE)) {
+            submissions = fs.readJsonSync(DB_FILE);
+        } else {
+            fs.writeJsonSync(DB_FILE, submissions, { spaces: 2 });
+        }
     } catch (error) {
         console.error('Error reading db.json:', error);
         res.status(500).json({ error: 'Failed to read submissions' });
@@ -47,7 +52,9 @@ export const readForm = (req: Request, res: Response) => {
     // Read submissions from db.json
     let submissions: Submission[] = [];
     try {
-        submissions = fs.readJsonSync(DB_FILE);
+        if (fs.existsSync(DB_FILE)) {
+            submissions = fs.readJsonSync(DB_FILE);
+        }
     } catch (error) {
         console.error('Error reading db.json:', error);
         res.status(500).json({ error: 'Failed to read submissions' });

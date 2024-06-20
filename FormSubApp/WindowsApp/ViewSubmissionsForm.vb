@@ -1,6 +1,6 @@
 ﻿Imports System.ComponentModel
 Imports System.Net.Http
-Imports NewtonSoft.Json
+Imports Newtonsoft.Json
 Public Class ViewSubmissionsForm
     Inherits System.Windows.Forms.Form
 
@@ -11,10 +11,13 @@ Public Class ViewSubmissionsForm
     Private WithEvents btnNext As System.Windows.Forms.Button
     Private lblSubmissionDetails As System.Windows.Forms.Label
 
+    Public Sub New()
+        InitializeComponent()
+    End Sub
     Private Sub ViewSubmissionsForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.KeyPreview = True
         LoadSubmissions()
-        DisplayCurrentSubmission()
+        'DisplayCurrentSubmission()
     End Sub
 
     Private Sub ViewSubmissionsForm_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
@@ -32,7 +35,7 @@ Public Class ViewSubmissionsForm
         End If
     End Sub
 
-    Private Sub btnNnext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
+    Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
         If currentIndex < submissions.Count - 1 Then
             currentIndex += 1
             DisplayCurrentSubmission()
@@ -77,6 +80,9 @@ Public Class ViewSubmissionsForm
         Me.btnPrevious = New System.Windows.Forms.Button()
         Me.btnNext = New System.Windows.Forms.Button()
         Me.lblSubmissionDetails = New System.Windows.Forms.Label()
+        Me.Controls.Add(Me.lblSubmissionDetails)
+
+        Me.SuspendLayout()
 
         ' 
         ' btnPrevious
