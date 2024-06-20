@@ -1,6 +1,8 @@
 
 # FormSubApp
 
+Note : All the compulsory requirements are functional and complete, available to execute on the master branch. The optional requirements were tried but I was unable to complete and polish them upto my satisfaction. My progress with the optional requirements can be inspected on the secondary branch of the repository.
+
 ## Overview
 
 FormSubApp is a simple form submission application that allows users to create and view workflow submissions. The application is divided into two main parts: a frontend developed using VB.NET (Windows Forms) and a backend developed using Node.js with TypeScript.
