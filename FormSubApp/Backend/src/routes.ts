@@ -1,72 +1,60 @@
 // src/routes.ts
 import { Request, Response } from 'express';
 import fs from 'fs-extra';
-import { Submission } from './types'; // Ensure the correct path to types.ts
-import path from 'path';
+import { WorkflowItem, WorkflowContainer } from './types'; // Ensure the correct path to types.ts
 
-const DB_FILE = path.join(__dirname, 'db.json');
+const DB_FILE = './db.json';
 
 export const submitForm = (req: Request, res: Response) => {
-    const submission: Submission = req.body as Submission; // Ensure req.body is correctly typed as Submission
+    const submission: WorkflowItem = req.body as WorkflowItem;
+
+    console.log('Received submission:', submission);
 
     // Read existing data from db.json
-    let submissions: Submission[] = [];
+    let workflowContainer: WorkflowContainer = { Workflows: [] };
     try {
         if (fs.existsSync(DB_FILE)) {
-            submissions = fs.readJsonSync(DB_FILE);
-        } else {
-            fs.writeJsonSync(DB_FILE, submissions, { spaces: 2 });
+            workflowContainer = fs.readJsonSync(DB_FILE);
         }
     } catch (error) {
         console.error('Error reading db.json:', error);
-        res.status(500).json({ error: 'Failed to read submissions' });
+        res.status(500).json({ error: 'Failed to read workflows' });
         return;
     }
 
-    // Add new submission
-    submissions.push(submission);
-
-    // Write updated data back to db.json
+    // Add new workflow
     try {
-        fs.writeJsonSync(DB_FILE, submissions, { spaces: 2 });
-        res.status(201).json({ message: 'Submission added successfully' });
+        if (!workflowContainer.Workflows) {
+            workflowContainer.Workflows = [];
+        }
+        workflowContainer.Workflows.push(submission);
+
+        // Write updated data back to db.json
+        fs.writeJsonSync(DB_FILE, workflowContainer, { spaces: 2 });
+        console.log('Workflow added successfully:', submission);
+        res.status(201).json({ message: 'Workflow added successfully' });
     } catch (error) {
         console.error('Error writing to db.json:', error);
-        res.status(500).json({ error: 'Failed to save submission' });
+        res.status(500).json({ error: 'Failed to save workflow' });
     }
 };
 
+
 export const readForm = (req: Request, res: Response) => {
-    const { index } = req.query;
-    if (typeof index !== 'string') {
-        res.status(400).json({ error: 'Invalid index parameter' });
-        return;
-    }
+    let workflowContainer: WorkflowContainer = { Workflows: [] };
 
-    const submissionIndex = Number(index);
-    if (isNaN(submissionIndex)) {
-        res.status(400).json({ error: 'Invalid index parameter' });
-        return;
-    }
-
-    // Read submissions from db.json
-    let submissions: Submission[] = [];
+    // Read workflows from db.json
     try {
         if (fs.existsSync(DB_FILE)) {
-            submissions = fs.readJsonSync(DB_FILE);
+            workflowContainer = fs.readJsonSync(DB_FILE);
         }
     } catch (error) {
         console.error('Error reading db.json:', error);
-        res.status(500).json({ error: 'Failed to read submissions' });
+        res.status(500).json({ error: 'Failed to read workflows' });
         return;
     }
 
-    // Validate index range
-    if (submissionIndex < 0 || submissionIndex >= submissions.length) {
-        res.status(404).json({ error: 'Submission not found' });
-        return;
-    }
+    console.log('Retrieved workflows:', workflowContainer.Workflows);
 
-    const submission = submissions[submissionIndex];
-    res.json(submission);
+    res.json(workflowContainer.Workflows);
 };

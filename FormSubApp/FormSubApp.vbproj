@@ -92,9 +92,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="WindowsApp\CreateSubmissionsForm.vb">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="WindowsApp\CreateSubmissionsForm.vb" />
     <Compile Include="WindowsApp\MainForm.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -109,12 +107,14 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="WindowsApp\CreateSubmissionsForm.resx">
+      <DependentUpon>CreateSubmissionsForm.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="WindowsApp\MainForm.resx">
       <DependentUpon>MainForm.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Backend\src\db.json" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>

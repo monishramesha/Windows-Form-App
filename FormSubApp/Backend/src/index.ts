@@ -2,13 +2,13 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs-extra';
-import { Submission } from './types';
+import { WorkflowItem, WorkflowContainer } from './types';
 import { submitForm, readForm } from './routes';
 
 const app = express();
 const PORT = 3000;
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Routes
 app.get('/ping', (req, res) => {
